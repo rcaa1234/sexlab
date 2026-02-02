@@ -1,26 +1,211 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-noto-sans);
   --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-rose: var(--rose);
+  --color-rose-light: var(--rose-light);
+  --color-rose-dark: var(--rose-dark);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* 溫暖深色玫瑰金主題 - 調亮版本 */
+:root {
+  --radius: 0.75rem;
+
+  /* 溫暖深色背景系列 - 帶一點暖色調 */
+  --background: #1a1818;
+  --foreground: #f5f0f0;
+  --card: #242020;
+  --card-foreground: #f5f0f0;
+  --popover: #2a2525;
+  --popover-foreground: #f5f0f0;
+
+  /* 玫瑰金主色 - 更亮更鮮明 */
+  --primary: #e8a0a0;
+  --primary-foreground: #1a1818;
+  --rose: #e8a0a0;
+  --rose-light: #f0c0c0;
+  --rose-dark: #c88080;
+
+  /* 次要色 */
+  --secondary: #2f2828;
+  --secondary-foreground: #f5f0f0;
+  --muted: #2a2424;
+  --muted-foreground: #b8a8a8;
+  --accent: #3a2828;
+  --accent-foreground: #f0c0c0;
+
+  /* 功能色 */
+  --destructive: #ef4444;
+  --border: #3a3232;
+  --input: #2f2828;
+  --ring: #e8a0a0;
+
+  /* 圖表色 */
+  --chart-1: #d4a0a0;
+  --chart-2: #e8b4b4;
+  --chart-3: #b08080;
+  --chart-4: #8b6f6f;
+  --chart-5: #6b5555;
+
+  /* 側邊欄 */
+  --sidebar: #0f0f0f;
+  --sidebar-foreground: #e5e5e5;
+  --sidebar-primary: #d4a0a0;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #e8b4b4;
+  --sidebar-border: #2a2a2a;
+  --sidebar-ring: #d4a0a0;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* 閱讀體驗優化 */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* 選取文字顏色 */
+  ::selection {
+    background-color: #d4a0a0;
+    color: #0a0a0a;
+  }
+
+  /* 滾動條樣式 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #d4a0a0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 文章內容樣式 */
+.prose-rose {
+  --tw-prose-body: #e5e5e5;
+  --tw-prose-headings: #e8b4b4;
+  --tw-prose-lead: #a0a0a0;
+  --tw-prose-links: #d4a0a0;
+  --tw-prose-bold: #e8b4b4;
+  --tw-prose-counters: #d4a0a0;
+  --tw-prose-bullets: #d4a0a0;
+  --tw-prose-hr: #2a2a2a;
+  --tw-prose-quotes: #e8b4b4;
+  --tw-prose-quote-borders: #d4a0a0;
+  --tw-prose-captions: #a0a0a0;
+  --tw-prose-code: #e8b4b4;
+  --tw-prose-pre-code: #e5e5e5;
+  --tw-prose-pre-bg: #141414;
+  --tw-prose-th-borders: #2a2a2a;
+  --tw-prose-td-borders: #1f1f1f;
+}
+
+/* 動畫效果 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(212, 160, 160, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(212, 160, 160, 0.2);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* 卡片懸浮效果 */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(212, 160, 160, 0.1);
+  border-color: #d4a0a0;
+}
+
+/* 漸層背景 */
+.gradient-rose {
+  background: linear-gradient(135deg, #d4a0a0 0%, #b08080 100%);
+}
+
+.gradient-dark {
+  background: linear-gradient(180deg, #0a0a0a 0%, #141414 100%);
 }

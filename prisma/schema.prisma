@@ -1,0 +1,96 @@
+// Prisma Schema for 愛愛實驗室部落格
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 文章
+model Post {
+  id            Int       @id @default(autoincrement())
+  slug          String    @unique @db.VarChar(255)
+  title         String    @db.VarChar(500)
+  excerpt       String?   @db.Text
+  content       String    @db.LongText
+  featuredImage String?   @db.VarChar(500)
+  status        String    @default("published") @db.VarChar(20)
+  readingTime   Int?
+  viewCount     Int       @default(0)
+  wpId          Int?      @unique
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  publishedAt   DateTime?
+
+  categoryId    Int?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  tags          PostTag[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("posts")
+}
+
+// 分類
+model Category {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique @db.VarChar(100)
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  icon        String?  @db.VarChar(50)
+  wpId        Int?     @unique
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts       Post[]
+
+  @@map("categories")
+}
+
+// 標籤
+model Tag {
+  id        Int       @id @default(autoincrement())
+  slug      String    @unique @db.VarChar(100)
+  name      String    @db.VarChar(100)
+  wpId      Int?      @unique
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  posts     PostTag[]
+
+  @@map("tags")
+}
+
+// 文章與標籤關聯
+model PostTag {
+  postId Int
+  tagId  Int
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+// 媒體檔案
+model Media {
+  id        Int      @id @default(autoincrement())
+  url       String   @db.VarChar(500)
+  altText   String?  @db.VarChar(255)
+  mimeType  String?  @db.VarChar(100)
+  width     Int?
+  height    Int?
+  wpId      Int?     @unique
+
+  createdAt DateTime @default(now())
+
+  @@map("media")
+}
