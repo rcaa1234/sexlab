@@ -172,7 +172,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
                 {article.tags && article.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {article.tags.map((tag) => (
+                    {article.tags.map((tag: { name: string; slug: string }) => (
                       <Link key={tag.slug} href={`/tag/${tag.slug}`}>
                         <Badge variant="secondary" className="hover:bg-primary/20">
                           #{tag.name}
