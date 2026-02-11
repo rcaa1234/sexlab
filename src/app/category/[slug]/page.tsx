@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Header, Footer } from "@/components/layout";
 import { ArticleCard, Article } from "@/components/blog";
 import { Button } from "@/components/ui/button";
-import { getCategory, getPosts, getCategories, transformPost } from "@/lib/wordpress";
+import { getPosts } from "@/lib/wordpress";
 import { ArrowLeft } from "lucide-react";
 
 interface CategoryPageProps {
@@ -137,19 +137,16 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     );
   }
 
-  // 嘗試從 WordPress 取得資料
+  // 從資料庫取得資料
   let articles: Article[] = mockArticlesByCategory[slug] || [];
 
   try {
-    const wpCategory = await getCategory(slug);
-    if (wpCategory) {
-      const { posts } = await getPosts({ category: wpCategory.id, perPage: 20 });
-      if (posts.length > 0) {
-        articles = posts.map(transformPost);
-      }
+    const { posts } = await getPosts({ categorySlug: slug, perPage: 20 });
+    if (posts.length > 0) {
+      articles = posts;
     }
   } catch (error) {
-    console.log("Using mock data - WordPress API unavailable");
+    console.log("Using mock data - database unavailable");
   }
 
   return (

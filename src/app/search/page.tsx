@@ -84,29 +84,17 @@ function SearchContent() {
     setHasSearched(true);
 
     try {
-      const res = await fetch(
-        `https://sexlab.com.tw/wp-json/wp/v2/posts?search=${encodeURIComponent(searchQuery)}&_embed=true`
-      );
-
+      const res = await fetch(`/api/posts/search?q=${encodeURIComponent(searchQuery)}`);
       if (res.ok) {
-        const posts = await res.json();
-        if (posts.length > 0) {
-          const transformedPosts = posts.map((post: any) => ({
-            id: post.id,
-            slug: post.slug,
-            title: post.title.rendered,
-            excerpt: post.excerpt.rendered.replace(/<[^>]*>/g, "").trim(),
-            category: post._embedded?.["wp:term"]?.[0]?.[0] || { name: "未分類", slug: "uncategorized" },
-            date: new Date(post.date).toLocaleDateString("zh-TW"),
-            readingTime: Math.ceil(post.content.rendered.replace(/<[^>]*>/g, "").length / 400),
-          }));
-          setResults(transformedPosts);
+        const data = await res.json();
+        if (data.posts.length > 0) {
+          setResults(data.posts);
           setIsLoading(false);
           return;
         }
       }
     } catch (error) {
-      console.log("WordPress search failed, using mock data");
+      console.log("Search API failed, using mock data");
     }
 
     const filtered = mockArticles.filter(

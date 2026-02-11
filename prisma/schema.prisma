@@ -6,6 +6,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 // 文章
@@ -17,6 +18,8 @@ model Post {
   content       String    @db.LongText
   featuredImage String?   @db.VarChar(500)
   status        String    @default("published") @db.VarChar(20)
+  summary       String?   @db.Text
+  faqJson       Json?
   readingTime   Int?
   viewCount     Int       @default(0)
   wpId          Int?      @unique

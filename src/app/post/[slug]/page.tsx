@@ -1,13 +1,15 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Header, Footer } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getPost, getPosts, transformPost } from "@/lib/wordpress";
-import { Calendar, Clock, ArrowLeft, Share2, Heart } from "lucide-react";
+import { getPost, getPosts } from "@/lib/db";
+import { Calendar, Clock, ArrowLeft, Share2, Heart, ChevronDown } from "lucide-react";
 import { ArticleCard } from "@/components/blog";
+import { ArticleJsonLd } from "@/components/seo/JsonLd";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -26,22 +28,26 @@ export async function generateStaticParams() {
 // 動態生成 SEO metadata
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPost(slug);
+  const article = await getPost(slug);
 
-  if (!post) {
+  if (!article) {
     return { title: "找不到文章" };
   }
 
-  const transformed = transformPost(post);
-
   return {
-    title: transformed.title,
-    description: transformed.excerpt,
+    title: article.title,
+    description: article.summary || article.excerpt,
     openGraph: {
-      title: transformed.title,
-      description: transformed.excerpt,
+      title: article.title,
+      description: article.summary || article.excerpt,
       type: "article",
-      images: transformed.featuredImage ? [transformed.featuredImage] : [],
+      url: `${siteUrl}/post/${article.slug}`,
+      images: article.featuredImage ? [article.featuredImage] : [],
+      publishedTime: article.isoDate,
+      modifiedTime: article.updatedAt,
+    },
+    alternates: {
+      canonical: `${siteUrl}/post/${article.slug}`,
     },
   };
 }
@@ -49,23 +55,20 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
 
-  // 嘗試從 WordPress 取得文章
+  // 從資料庫取得文章
   let article;
-  let relatedArticles: ReturnType<typeof transformPost>[] = [];
+  let relatedArticles: Awaited<ReturnType<typeof getPosts>>["posts"] = [];
 
   try {
-    const post = await getPost(slug);
-    if (post) {
-      article = transformPost(post);
-      // 取得相關文章
+    article = await getPost(slug);
+    if (article) {
       const { posts } = await getPosts({ perPage: 4 });
       relatedArticles = posts
         .filter((p) => p.slug !== slug)
-        .slice(0, 3)
-        .map(transformPost);
+        .slice(0, 3);
     }
   } catch (error) {
-    console.log("WordPress API unavailable, using mock data");
+    console.log("Database unavailable, using mock data");
   }
 
   // 如果沒有文章，使用假資料展示
@@ -75,6 +78,7 @@ export default async function PostPage({ params }: PostPageProps) {
       slug: slug,
       title: "探索 G 點高潮：完整指南與實用技巧",
       excerpt: "G 點是許多人好奇但又不太了解的區域。",
+      summary: "",
       content: `
         <h2>什麼是 G 點？</h2>
         <p>G 點（Gräfenberg spot）是位於陰道前壁的一個敏感區域，得名於德國婦產科醫生 Ernst Gräfenberg。這個區域大約在陰道入口內側 2-3 公分處，觸感略為粗糙，與周圍平滑的陰道壁形成對比。</p>
@@ -109,7 +113,10 @@ export default async function PostPage({ params }: PostPageProps) {
         { name: "G點", slug: "g-spot" },
         { name: "技巧", slug: "tips" },
       ],
+      faqJson: null as { question: string; answer: string }[] | null,
       date: "2024年1月15日",
+      isoDate: "2024-01-15T00:00:00.000Z",
+      updatedAt: "2024-01-15T00:00:00.000Z",
       readingTime: 8,
     };
   }
@@ -117,6 +124,17 @@ export default async function PostPage({ params }: PostPageProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+
+      {/* JSON-LD 結構化資料 */}
+      <ArticleJsonLd
+        title={article.title}
+        description={article.summary || article.excerpt}
+        url={`${siteUrl}/post/${article.slug}`}
+        image={article.featuredImage}
+        datePublished={article.isoDate}
+        dateModified={article.updatedAt}
+        faq={article.faqJson}
+      />
 
       <main className="flex-1">
         {/* Article Header */}
@@ -199,6 +217,29 @@ export default async function PostPage({ params }: PostPageProps) {
                   prose-img:rounded-xl prose-img:shadow-lg"
                 dangerouslySetInnerHTML={{ __html: article.content }}
               />
+
+              {/* FAQ 區塊 */}
+              {article.faqJson && article.faqJson.length > 0 && (
+                <section className="mt-12 pt-8 border-t border-border/40">
+                  <h2 className="text-2xl font-bold text-foreground mb-6">常見問題</h2>
+                  <div className="space-y-4">
+                    {article.faqJson.map((faq, index) => (
+                      <details
+                        key={index}
+                        className="group rounded-lg border border-border/50 bg-card"
+                      >
+                        <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-foreground font-medium hover:text-primary transition-colors">
+                          <span>{faq.question}</span>
+                          <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-open:rotate-180" />
+                        </summary>
+                        <div className="px-6 pb-4 text-foreground/80 leading-relaxed">
+                          {faq.answer}
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* Share & Actions */}
               <div className="mt-12 pt-8 border-t border-border/40">

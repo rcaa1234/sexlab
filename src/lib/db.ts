@@ -118,12 +118,13 @@ export async function searchPosts(query: string, page = 1, perPage = 10) {
 }
 
 // 轉換資料格式
-function transformPost(post: any) {
+export function transformPost(post: any) {
   return {
     id: post.id,
     slug: post.slug,
     title: post.title,
     excerpt: post.excerpt || "",
+    summary: post.summary || "",
     content: post.content,
     featuredImage: post.featuredImage,
     category: post.category || { name: "未分類", slug: "uncategorized" },
@@ -131,6 +132,7 @@ function transformPost(post: any) {
       name: pt.tag.name,
       slug: pt.tag.slug,
     })) || [],
+    faqJson: post.faqJson as { question: string; answer: string }[] | null,
     date: post.publishedAt
       ? new Date(post.publishedAt).toLocaleDateString("zh-TW", {
           year: "numeric",
@@ -138,6 +140,8 @@ function transformPost(post: any) {
           day: "numeric",
         })
       : "",
+    isoDate: post.publishedAt ? new Date(post.publishedAt).toISOString() : "",
+    updatedAt: post.updatedAt ? new Date(post.updatedAt).toISOString() : "",
     readingTime: post.readingTime || 5,
   };
 }

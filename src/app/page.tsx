@@ -1,6 +1,6 @@
 import { Header, Footer } from "@/components/layout";
 import { ArticleCard, Article } from "@/components/blog";
-import { getPosts, getCategories, transformPost } from "@/lib/wordpress";
+import { getPosts, getCategories } from "@/lib/wordpress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Sparkles } from "lucide-react";
@@ -72,7 +72,7 @@ export default async function HomePage() {
     ]);
 
     if (postsData.posts.length > 0) {
-      articles = postsData.posts.map(transformPost);
+      articles = postsData.posts;
     }
     categories = categoriesData;
   } catch (error) {

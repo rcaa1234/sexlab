@@ -13,7 +13,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "愛愛實驗室 | 性知識與情趣生活分享",
     template: "%s | 愛愛實驗室",
@@ -26,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "zh_TW",
-    url: "https://sexlab.com.tw",
+    url: siteUrl,
     siteName: "愛愛實驗室",
     title: "愛愛實驗室 | 性知識與情趣生活分享",
     description:
@@ -41,6 +44,13 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 

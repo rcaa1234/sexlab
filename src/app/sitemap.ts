@@ -1,71 +1,54 @@
 import { MetadataRoute } from "next";
-import { getPosts, getCategories } from "@/lib/wordpress";
+import { getPosts, getCategories } from "@/lib/db";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://sexlab.com.tw";
-
   // 靜態頁面
   const staticPages: MetadataRoute.Sitemap = [
     {
-      url: baseUrl,
+      url: siteUrl,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
     },
     {
-      url: `${baseUrl}/search`,
+      url: `${siteUrl}/search`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.5,
     },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
   ];
 
   // 分類頁面
-  const categoryPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/category/knowledge`,
+  let categoryPages: MetadataRoute.Sitemap = [];
+  try {
+    const categories = await getCategories();
+    categoryPages = categories.map((cat) => ({
+      url: `${siteUrl}/category/${cat.slug}`,
       lastModified: new Date(),
-      changeFrequency: "weekly",
+      changeFrequency: "weekly" as const,
       priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/category/toys`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/category/creative`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-  ];
+    }));
+  } catch {
+    categoryPages = [
+      { url: `${siteUrl}/category/knowledge`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+      { url: `${siteUrl}/category/toys`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+      { url: `${siteUrl}/category/creative`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    ];
+  }
 
-  // 文章頁面（從 WordPress 動態取得）
+  // 文章頁面（從資料庫動態取得）
   let postPages: MetadataRoute.Sitemap = [];
-
   try {
     const { posts } = await getPosts({ perPage: 100 });
     postPages = posts.map((post) => ({
-      url: `${baseUrl}/post/${post.slug}`,
-      lastModified: new Date(post.modified),
+      url: `${siteUrl}/post/${post.slug}`,
+      lastModified: post.updatedAt ? new Date(post.updatedAt) : new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));
-  } catch (error) {
+  } catch {
     console.log("Could not fetch posts for sitemap");
   }
 

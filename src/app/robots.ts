@@ -1,5 +1,7 @@
 import { MetadataRoute } from "next";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -9,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/admin/"],
       },
     ],
-    sitemap: "https://sexlab.com.tw/sitemap.xml",
+    sitemap: `${siteUrl}/sitemap.xml`,
   };
 }
