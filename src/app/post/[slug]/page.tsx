@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Header, Footer } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getPost, getPosts } from "@/lib/db";
+import { getPost, getPosts, type TransformedPost } from "@/lib/db";
 import { Calendar, Clock, ArrowLeft, Share2, Heart, ChevronDown } from "lucide-react";
 import { ArticleCard } from "@/components/blog";
 import { ArticleJsonLd } from "@/components/seo/JsonLd";
@@ -19,7 +19,7 @@ interface PostPageProps {
 export async function generateStaticParams() {
   try {
     const { posts } = await getPosts({ perPage: 100 });
-    return posts.map((post) => ({ slug: post.slug }));
+    return posts.map((post: TransformedPost) => ({ slug: post.slug }));
   } catch {
     return [];
   }
@@ -28,46 +28,50 @@ export async function generateStaticParams() {
 // 動態生成 SEO metadata
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = await getPost(slug);
 
-  if (!article) {
-    return { title: "找不到文章" };
-  }
+  try {
+    const article = await getPost(slug);
+    if (!article) {
+      return { title: "找不到文章" };
+    }
 
-  return {
-    title: article.title,
-    description: article.summary || article.excerpt,
-    openGraph: {
+    return {
       title: article.title,
       description: article.summary || article.excerpt,
-      type: "article",
-      url: `${siteUrl}/post/${article.slug}`,
-      images: article.featuredImage ? [article.featuredImage] : [],
-      publishedTime: article.isoDate,
-      modifiedTime: article.updatedAt,
-    },
-    alternates: {
-      canonical: `${siteUrl}/post/${article.slug}`,
-    },
-  };
+      openGraph: {
+        title: article.title,
+        description: article.summary || article.excerpt,
+        type: "article",
+        url: `${siteUrl}/post/${article.slug}`,
+        images: article.featuredImage ? [article.featuredImage] : [],
+        publishedTime: article.isoDate,
+        modifiedTime: article.updatedAt,
+      },
+      alternates: {
+        canonical: `${siteUrl}/post/${article.slug}`,
+      },
+    };
+  } catch {
+    return { title: "找不到文章" };
+  }
 }
 
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
 
   // 從資料庫取得文章
-  let article;
-  let relatedArticles: Awaited<ReturnType<typeof getPosts>>["posts"] = [];
+  let article: TransformedPost | null = null;
+  let relatedArticles: TransformedPost[] = [];
 
   try {
     article = await getPost(slug);
     if (article) {
       const { posts } = await getPosts({ perPage: 4 });
       relatedArticles = posts
-        .filter((p) => p.slug !== slug)
+        .filter((p: TransformedPost) => p.slug !== slug)
         .slice(0, 3);
     }
-  } catch (error) {
+  } catch {
     console.log("Database unavailable, using mock data");
   }
 
@@ -113,7 +117,7 @@ export default async function PostPage({ params }: PostPageProps) {
         { name: "G點", slug: "g-spot" },
         { name: "技巧", slug: "tips" },
       ],
-      faqJson: null as { question: string; answer: string }[] | null,
+      faqJson: null,
       date: "2024年1月15日",
       isoDate: "2024-01-15T00:00:00.000Z",
       updatedAt: "2024-01-15T00:00:00.000Z",
@@ -130,7 +134,7 @@ export default async function PostPage({ params }: PostPageProps) {
         title={article.title}
         description={article.summary || article.excerpt}
         url={`${siteUrl}/post/${article.slug}`}
-        image={article.featuredImage}
+        image={article.featuredImage || undefined}
         datePublished={article.isoDate}
         dateModified={article.updatedAt}
         faq={article.faqJson}
@@ -223,7 +227,7 @@ export default async function PostPage({ params }: PostPageProps) {
                 <section className="mt-12 pt-8 border-t border-border/40">
                   <h2 className="text-2xl font-bold text-foreground mb-6">常見問題</h2>
                   <div className="space-y-4">
-                    {article.faqJson.map((faq, index) => (
+                    {article.faqJson.map((faq: { question: string; answer: string }, index: number) => (
                       <details
                         key={index}
                         className="group rounded-lg border border-border/50 bg-card"
@@ -266,7 +270,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <section className="container mx-auto px-4 py-12 border-t border-border/40">
             <h2 className="text-2xl font-bold text-foreground mb-8">相關文章</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedArticles.map((related) => (
+              {relatedArticles.map((related: TransformedPost) => (
                 <ArticleCard key={related.id} article={related} />
               ))}
             </div>

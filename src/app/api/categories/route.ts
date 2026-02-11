@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 
 // GET /api/categories
 export async function GET() {
+  if (!prisma) return NextResponse.json({ error: "Database not available" }, { status: 503 });
   const categories = await prisma.category.findMany({
     include: { _count: { select: { posts: true } } },
     orderBy: { name: "asc" },
@@ -12,6 +13,7 @@ export async function GET() {
 
 // POST /api/categories
 export async function POST(request: NextRequest) {
+  if (!prisma) return NextResponse.json({ error: "Database not available" }, { status: 503 });
   const body = await request.json();
   const { name, slug, description, icon } = body;
 

@@ -7,6 +7,7 @@ interface RouteParams {
 
 // GET /api/posts/[id]
 export async function GET(_request: NextRequest, { params }: RouteParams) {
+  if (!prisma) return NextResponse.json({ error: "Database not available" }, { status: 503 });
   const { id } = await params;
   const post = await prisma.post.findUnique({
     where: { id: parseInt(id) },
@@ -25,6 +26,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
 // PUT /api/posts/[id] - 更新文章
 export async function PUT(request: NextRequest, { params }: RouteParams) {
+  if (!prisma) return NextResponse.json({ error: "Database not available" }, { status: 503 });
   const { id } = await params;
   const body = await request.json();
   const { title, slug, content, excerpt, summary, faqJson, featuredImage, status, categoryId, tagIds, readingTime } = body;
@@ -80,6 +82,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 // DELETE /api/posts/[id]
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+  if (!prisma) return NextResponse.json({ error: "Database not available" }, { status: 503 });
   const { id } = await params;
   const postId = parseInt(id);
 

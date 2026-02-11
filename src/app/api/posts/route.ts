@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 
 // GET /api/posts - 取得文章列表
 export async function GET(request: NextRequest) {
+  if (!prisma) return NextResponse.json({ error: "Database not available" }, { status: 503 });
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
   const perPage = parseInt(searchParams.get("perPage") || "20");
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/posts - 新增文章
 export async function POST(request: NextRequest) {
+  if (!prisma) return NextResponse.json({ error: "Database not available" }, { status: 503 });
   const body = await request.json();
   const { title, slug, content, excerpt, summary, faqJson, featuredImage, status, categoryId, tagIds, readingTime } = body;
 
