@@ -62,7 +62,7 @@ const mockArticles: Article[] = [
 
 export default async function HomePage() {
   let articles: Article[] = mockArticles;
-  let categories: { id: number; name: string; slug: string; count: number }[] = [];
+  let categories: Awaited<ReturnType<typeof getCategories>> = [];
 
   // 嘗試從 WordPress 取得資料
   try {
