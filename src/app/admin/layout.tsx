@@ -1,6 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/admin/login");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Admin Header */}
@@ -19,9 +31,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             </nav>
           </div>
-          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            回到前台
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              回到前台
+            </Link>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground gap-1.5">
+              <LogOut className="h-4 w-4" />
+              登出
+            </Button>
+          </div>
         </div>
       </header>
 

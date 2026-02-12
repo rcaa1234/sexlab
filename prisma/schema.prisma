@@ -81,6 +81,21 @@ model PostTag {
   @@map("post_tags")
 }
 
+// 管理員
+model Admin {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.VarChar(255)
+  name         String   @db.VarChar(100)
+  passwordHash String   @db.VarChar(255)
+  role         String   @default("editor") @db.VarChar(20) // admin, editor
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
 // 媒體檔案
 model Media {
   id        Int      @id @default(autoincrement())
