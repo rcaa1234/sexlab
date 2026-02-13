@@ -10,14 +10,17 @@ import {
 // GET - 檢查是否需要初始設定
 export async function GET() {
   if (!prisma) {
-    return NextResponse.json(
-      { error: "Database not available" },
-      { status: 503 }
-    );
+    // 資料庫不可用時，視為需要設定（讓使用者看到表單，提交時再報錯）
+    return NextResponse.json({ needSetup: true });
   }
 
-  const count = await prisma.admin.count();
-  return NextResponse.json({ needSetup: count === 0 });
+  try {
+    const count = await prisma.admin.count();
+    return NextResponse.json({ needSetup: count === 0 });
+  } catch {
+    // admins 資料表可能尚未建立，視為需要設定
+    return NextResponse.json({ needSetup: true });
+  }
 }
 
 // POST - 建立第一個管理員帳號

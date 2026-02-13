@@ -27,7 +27,7 @@ export default function SetupPage() {
     fetch("/api/auth/setup")
       .then((res) => res.json())
       .then((data) => {
-        if (!data.needSetup) {
+        if (data.needSetup === false) {
           router.replace("/admin/login");
         } else {
           setChecking(false);
