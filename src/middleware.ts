@@ -9,6 +9,11 @@ const SESSION_COOKIE = "admin-session";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // 設定頁面與登入頁面：不需認證
+  if (pathname === "/admin/setup") {
+    return NextResponse.next();
+  }
+
   // 登入頁面：已登入則導向後台首頁
   if (pathname === "/admin/login") {
     const token = request.cookies.get(SESSION_COOKIE)?.value;
