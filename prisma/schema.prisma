@@ -96,6 +96,19 @@ model Admin {
   @@map("admins")
 }
 
+// API Key
+model ApiKey {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  prefix      String    @db.VarChar(10)
+  createdById Int
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@map("api_keys")
+}
+
 // 媒體檔案
 model Media {
   id        Int      @id @default(autoincrement())

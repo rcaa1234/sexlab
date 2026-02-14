@@ -27,6 +27,23 @@ async function ensureAdminsTable() {
   `;
 }
 
+// 用 raw SQL 建立 api_keys 資料表（如果不存在）
+async function ensureApiKeysTable() {
+  if (!prisma) return;
+  await prisma.$executeRaw`
+    CREATE TABLE IF NOT EXISTS \`api_keys\` (
+      \`id\` INT NOT NULL AUTO_INCREMENT,
+      \`name\` VARCHAR(100) NOT NULL,
+      \`prefix\` VARCHAR(10) NOT NULL,
+      \`createdById\` INT NOT NULL,
+      \`isActive\` BOOLEAN NOT NULL DEFAULT true,
+      \`lastUsedAt\` DATETIME(3) NULL,
+      \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+      PRIMARY KEY (\`id\`)
+    ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+  `;
+}
+
 // GET - 檢查是否需要初始設定
 export async function GET() {
   if (!prisma) {
@@ -35,6 +52,7 @@ export async function GET() {
 
   try {
     await ensureAdminsTable();
+    await ensureApiKeysTable();
     const count = await prisma.admin.count();
     return NextResponse.json({ needSetup: count === 0 });
   } catch {
@@ -54,6 +72,7 @@ export async function POST(request: NextRequest) {
   try {
     // 確保資料表存在
     await ensureAdminsTable();
+    await ensureApiKeysTable();
 
     // 如果已有管理員，拒絕建立
     const count = await prisma.admin.count();

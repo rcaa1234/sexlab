@@ -29,6 +29,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link href="/admin/posts/new" className="text-muted-foreground hover:text-foreground transition-colors">
                 新增文章
               </Link>
+              <Link href="/admin/api-keys" className="text-muted-foreground hover:text-foreground transition-colors">
+                API Keys
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">

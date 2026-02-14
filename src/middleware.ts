@@ -42,15 +42,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 保護寫入 API（POST, PUT, DELETE）
-  if (
-    pathname.startsWith("/api/posts") ||
-    pathname.startsWith("/api/categories")
-  ) {
-    if (request.method === "GET") {
-      return NextResponse.next();
-    }
-
+  // 保護管理 API（/api/admin/*）
+  if (pathname.startsWith("/api/admin")) {
     const token = request.cookies.get(SESSION_COOKIE)?.value;
     if (!token) {
       return NextResponse.json({ error: "未授權" }, { status: 401 });
@@ -63,9 +56,49 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // 保護寫入 API（POST, PUT, DELETE）
+  if (
+    pathname.startsWith("/api/posts") ||
+    pathname.startsWith("/api/categories")
+  ) {
+    if (request.method === "GET") {
+      return NextResponse.next();
+    }
+
+    // 1. 檢查 session cookie
+    const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
+    if (sessionToken) {
+      try {
+        await jwtVerify(sessionToken, JWT_SECRET, { issuer: "sexlab-blog" });
+        return NextResponse.next();
+      } catch {
+        // cookie 無效，繼續檢查 Bearer token
+      }
+    }
+
+    // 2. 檢查 Authorization: Bearer <token>（API Key）
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const bearerToken = authHeader.slice(7);
+      try {
+        const { payload } = await jwtVerify(bearerToken, JWT_SECRET, {
+          issuer: "sexlab-blog",
+        });
+        if (payload.type === "api-key") {
+          return NextResponse.next();
+        }
+      } catch {
+        // Bearer token 無效
+      }
+    }
+
+    // 3. 都沒有 → 401
+    return NextResponse.json({ error: "未授權" }, { status: 401 });
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/posts/:path*", "/api/categories/:path*"],
+  matcher: ["/admin/:path*", "/api/posts/:path*", "/api/categories/:path*", "/api/admin/:path*"],
 };

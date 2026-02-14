@@ -40,6 +40,40 @@ export async function verifySession(
   }
 }
 
+// 建立 API Key（簽發不過期的 JWT）
+export async function createApiKey(
+  keyId: number,
+  name: string
+): Promise<string> {
+  return new SignJWT({ type: "api-key", name })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(String(keyId))
+    .setIssuer("sexlab-blog")
+    .setIssuedAt()
+    .sign(JWT_SECRET);
+}
+
+export interface ApiKeyPayload extends JWTPayload {
+  type: "api-key";
+  name: string;
+  sub: string;
+}
+
+// 驗證 API Key JWT
+export async function verifyApiKey(
+  token: string
+): Promise<ApiKeyPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET, {
+      issuer: "sexlab-blog",
+    });
+    if (payload.type !== "api-key") return null;
+    return payload as ApiKeyPayload;
+  } catch {
+    return null;
+  }
+}
+
 // 密碼雜湊
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
