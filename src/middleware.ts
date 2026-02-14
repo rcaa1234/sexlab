@@ -76,19 +76,12 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // 2. 檢查 Authorization: Bearer <token>（API Key）
+    // 2. 檢查 Authorization: Bearer <token>（環境變數 AGENT_API_KEY）
     const authHeader = request.headers.get("authorization");
     if (authHeader?.startsWith("Bearer ")) {
       const bearerToken = authHeader.slice(7);
-      try {
-        const { payload } = await jwtVerify(bearerToken, JWT_SECRET, {
-          issuer: "sexlab-blog",
-        });
-        if (payload.type === "api-key") {
-          return NextResponse.next();
-        }
-      } catch {
-        // Bearer token 無效
+      if (bearerToken === process.env.AGENT_API_KEY) {
+        return NextResponse.next();
       }
     }
 
