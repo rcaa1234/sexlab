@@ -14,7 +14,7 @@ try {
     });
   if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 } catch {
-  // Build time — 資料庫不可用，prisma 為 null
+  console.log("Database unavailable, using mock data");
 }
 
 export { prisma };
