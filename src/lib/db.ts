@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -7,9 +8,22 @@ const globalForPrisma = globalThis as unknown as {
 // 延遲初始化：避免 build 時因無資料庫連線而失敗
 let prisma: PrismaClient | null = null;
 try {
+  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
+
+  // Prisma 7.x 需要 driver adapter
+  const url = new URL(process.env.DATABASE_URL);
+  const adapter = new PrismaMariaDb({
+    host: url.hostname,
+    port: parseInt(url.port || "3306"),
+    user: url.username,
+    password: url.password,
+    database: url.pathname.slice(1),
+  });
+
   prisma =
     globalForPrisma.prisma ??
     new PrismaClient({
+      adapter,
       log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     });
   if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
