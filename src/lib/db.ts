@@ -13,8 +13,8 @@ try {
       log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     });
   if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-} catch {
-  console.log("Database unavailable, using mock data");
+} catch (e) {
+  console.log("Database unavailable, using mock data.", e instanceof Error ? e.message : e);
 }
 
 export { prisma };

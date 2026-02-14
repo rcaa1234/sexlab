@@ -1,6 +1,6 @@
 FROM node:20-alpine AS base
 
-# --- 安裝依賴 ---
+# --- 安裝所有依賴（含 devDeps，build 需要） ---
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -15,30 +15,33 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
+# --- 只安裝 production 依賴 ---
+FROM base AS prod-deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
+RUN npm ci --omit=dev
+
 # --- Production ---
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# production node_modules
+COPY --from=prod-deps /app/node_modules ./node_modules
 
-# Next.js standalone 輸出
+# dotenv（prisma.config.ts 需要，但在 devDeps 中）
+COPY --from=deps /app/node_modules/dotenv ./node_modules/dotenv
+
+# Build 產出與必要檔案
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Prisma 引擎、schema、config（standalone 不會自動包含）
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
-
-USER nextjs
 
 EXPOSE 8080
 ENV PORT=8080
-ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["npm", "run", "start"]
