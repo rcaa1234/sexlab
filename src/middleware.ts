@@ -6,6 +6,35 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 const SESSION_COOKIE = "admin-session";
 
+// 統一認證：session cookie / Authorization: Bearer / x-api-key
+async function verifyAnyAuth(request: NextRequest): Promise<boolean> {
+  // 1. Session cookie
+  const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
+  if (sessionToken) {
+    try {
+      await jwtVerify(sessionToken, JWT_SECRET, { issuer: "sexlab-blog" });
+      return true;
+    } catch {
+      // 繼續檢查其他方式
+    }
+  }
+
+  const agentKey = process.env.AGENT_API_KEY;
+  if (agentKey) {
+    // 2. x-api-key header
+    if (request.headers.get("x-api-key") === agentKey) {
+      return true;
+    }
+    // 3. Authorization: Bearer
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ") && authHeader.slice(7) === agentKey) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -42,18 +71,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 保護管理 API（/api/admin/*）
+  // 保護管理 API（/api/admin/*）— 支援 cookie、Bearer token、x-api-key
   if (pathname.startsWith("/api/admin")) {
-    const token = request.cookies.get(SESSION_COOKIE)?.value;
-    if (!token) {
-      return NextResponse.json({ error: "未授權" }, { status: 401 });
-    }
-    try {
-      await jwtVerify(token, JWT_SECRET, { issuer: "sexlab-blog" });
+    if (await verifyAnyAuth(request)) {
       return NextResponse.next();
-    } catch {
-      return NextResponse.json({ error: "未授權" }, { status: 401 });
     }
+    return NextResponse.json({ error: "未授權" }, { status: 401 });
   }
 
   // 保護寫入 API（POST, PUT, DELETE）
@@ -65,27 +88,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    // 1. 檢查 session cookie
-    const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
-    if (sessionToken) {
-      try {
-        await jwtVerify(sessionToken, JWT_SECRET, { issuer: "sexlab-blog" });
-        return NextResponse.next();
-      } catch {
-        // cookie 無效，繼續檢查 Bearer token
-      }
+    if (await verifyAnyAuth(request)) {
+      return NextResponse.next();
     }
-
-    // 2. 檢查 Authorization: Bearer <token>（環境變數 AGENT_API_KEY）
-    const authHeader = request.headers.get("authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      const bearerToken = authHeader.slice(7);
-      if (bearerToken === process.env.AGENT_API_KEY) {
-        return NextResponse.next();
-      }
-    }
-
-    // 3. 都沒有 → 401
     return NextResponse.json({ error: "未授權" }, { status: 401 });
   }
 
