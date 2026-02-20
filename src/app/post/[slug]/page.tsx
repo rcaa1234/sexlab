@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Header, Footer } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,9 @@ import { getPost, getPosts, type TransformedPost } from "@/lib/db";
 import { Calendar, Clock, ArrowLeft, Share2, Heart, ChevronDown } from "lucide-react";
 import { ArticleCard } from "@/components/blog";
 import { ArticleJsonLd } from "@/components/seo/JsonLd";
+
+// 每 60 秒重新生成頁面（ISR）
+export const revalidate = 60;
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
 
@@ -75,54 +79,9 @@ export default async function PostPage({ params }: PostPageProps) {
     console.log("Database unavailable, using mock data");
   }
 
-  // 如果沒有文章，使用假資料展示
+  // 找不到文章 → 404
   if (!article) {
-    article = {
-      id: 1,
-      slug: slug,
-      title: "探索 G 點高潮：完整指南與實用技巧",
-      excerpt: "G 點是許多人好奇但又不太了解的區域。",
-      summary: "",
-      content: `
-        <h2>什麼是 G 點？</h2>
-        <p>G 點（Gräfenberg spot）是位於陰道前壁的一個敏感區域，得名於德國婦產科醫生 Ernst Gräfenberg。這個區域大約在陰道入口內側 2-3 公分處，觸感略為粗糙，與周圍平滑的陰道壁形成對比。</p>
-
-        <h2>如何找到 G 點？</h2>
-        <p>找到 G 點需要一些探索和耐心。以下是一些建議：</p>
-        <ul>
-          <li>首先確保身心放鬆</li>
-          <li>使用充足的潤滑液</li>
-          <li>將手指插入陰道，指腹朝向腹部方向</li>
-          <li>輕輕用「來」的手勢按壓前壁</li>
-          <li>注意任何特別敏感的區域</li>
-        </ul>
-
-        <h2>刺激技巧</h2>
-        <p>找到 G 點後，可以嘗試以下刺激方式：</p>
-        <ol>
-          <li><strong>輕柔按壓</strong>：用指腹輕輕按壓該區域</li>
-          <li><strong>畫圈動作</strong>：以小圓圈方式按摩</li>
-          <li><strong>來回摩擦</strong>：前後輕柔地滑動</li>
-          <li><strong>配合其他刺激</strong>：同時刺激陰蒂可能帶來更強烈的快感</li>
-        </ol>
-
-        <h2>重要提醒</h2>
-        <p>每個人的身體都是獨特的，G 點的位置、大小和敏感度因人而異。有些人可能不容易找到或對 G 點刺激沒有特別強烈的反應，這都是完全正常的。</p>
-        <p>探索自己的身體是一個過程，重要的是享受這個過程，而不是追求特定的結果。與伴侶溝通、保持開放的心態，才是獲得美好性體驗的關鍵。</p>
-      `,
-      featuredImage: undefined,
-      category: { name: "愛愛小知識", slug: "knowledge" },
-      tags: [
-        { name: "高潮", slug: "orgasm" },
-        { name: "G點", slug: "g-spot" },
-        { name: "技巧", slug: "tips" },
-      ],
-      faqJson: null,
-      date: "2024年1月15日",
-      isoDate: "2024-01-15T00:00:00.000Z",
-      updatedAt: "2024-01-15T00:00:00.000Z",
-      readingTime: 8,
-    };
+    notFound();
   }
 
   return (

@@ -60,6 +60,9 @@ const mockArticles: Article[] = [
   },
 ];
 
+// 每 60 秒重新生成頁面（ISR）
+export const revalidate = 60;
+
 export default async function HomePage() {
   let articles: Article[] = mockArticles;
   let categories: Awaited<ReturnType<typeof getCategories>> = [];

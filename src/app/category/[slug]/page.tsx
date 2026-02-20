@@ -28,6 +28,9 @@ const categoryInfo: Record<string, { name: string; description: string; icon: st
   },
 };
 
+// 每 60 秒重新生成頁面（ISR）
+export const revalidate = 60;
+
 // 生成靜態頁面
 export async function generateStaticParams() {
   return Object.keys(categoryInfo).map((slug) => ({ slug }));
