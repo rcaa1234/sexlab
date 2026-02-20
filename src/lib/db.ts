@@ -200,4 +200,15 @@ export function transformPost(post: Record<string, unknown>): TransformedPost {
   };
 }
 
+// 網站設定 helper
+export async function getSiteSetting(key: string): Promise<string | null> {
+  if (!prisma) return null;
+  try {
+    const setting = await prisma.siteSetting.findUnique({ where: { key } });
+    return setting?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export type { PrismaClient };

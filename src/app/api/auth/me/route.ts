@@ -32,6 +32,8 @@ export async function GET(_request: NextRequest) {
       name: true,
       role: true,
       isActive: true,
+      googleId: true,
+      avatar: true,
     },
   });
 
@@ -44,5 +46,7 @@ export async function GET(_request: NextRequest) {
     email: admin.email,
     name: admin.name,
     role: admin.role,
+    googleId: admin.googleId,
+    avatar: admin.avatar,
   });
 }

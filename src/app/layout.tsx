@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC, Geist_Mono } from "next/font/google";
+import Script from "next/script";
+import { getSiteSetting } from "@/lib/db";
 import "./globals.css";
 
 const notoSansTC = Noto_Sans_TC({
@@ -54,17 +56,30 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const ga4Id = await getSiteSetting("ga4_measurement_id");
+
   return (
     <html lang="zh-TW">
       <body
         className={`${notoSansTC.variable} ${geistMono.variable} font-sans antialiased`}
       >
         {children}
+        {ga4Id && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga4Id}');`}
+            </Script>
+          </>
+        )}
       </body>
     </html>
   );

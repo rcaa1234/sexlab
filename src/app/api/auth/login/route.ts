@@ -43,6 +43,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Google-only 用戶沒有密碼
+  if (!admin.passwordHash) {
+    return NextResponse.json(
+      { error: "此帳號使用 Google 登入，請點擊「使用 Google 登入」" },
+      { status: 400 }
+    );
+  }
+
   // 驗證密碼
   const isValid = await verifyPassword(password, admin.passwordHash);
 

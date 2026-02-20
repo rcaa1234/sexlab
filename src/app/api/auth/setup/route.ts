@@ -16,13 +16,37 @@ async function ensureAdminsTable() {
       \`id\` INT NOT NULL AUTO_INCREMENT,
       \`email\` VARCHAR(255) NOT NULL,
       \`name\` VARCHAR(100) NOT NULL,
-      \`passwordHash\` VARCHAR(255) NOT NULL,
+      \`passwordHash\` VARCHAR(255) NULL,
+      \`googleId\` VARCHAR(255) NULL,
+      \`avatar\` VARCHAR(500) NULL,
       \`role\` VARCHAR(20) NOT NULL DEFAULT 'editor',
       \`isActive\` BOOLEAN NOT NULL DEFAULT true,
       \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
       \`updatedAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
       PRIMARY KEY (\`id\`),
-      UNIQUE INDEX \`admins_email_key\`(\`email\`)
+      UNIQUE INDEX \`admins_email_key\`(\`email\`),
+      UNIQUE INDEX \`admins_googleId_key\`(\`googleId\`)
+    ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+  `;
+  // 升級舊表：passwordHash 改 nullable、新增 googleId + avatar
+  try {
+    await prisma.$executeRaw`ALTER TABLE \`admins\` MODIFY COLUMN \`passwordHash\` VARCHAR(255) NULL`;
+    await prisma.$executeRaw`ALTER TABLE \`admins\` ADD COLUMN \`googleId\` VARCHAR(255) NULL UNIQUE`;
+    await prisma.$executeRaw`ALTER TABLE \`admins\` ADD COLUMN \`avatar\` VARCHAR(500) NULL`;
+  } catch {
+    // 欄位已存在則忽略
+  }
+}
+
+// 用 raw SQL 建立 site_settings 資料表（如果不存在）
+async function ensureSiteSettingsTable() {
+  if (!prisma) return;
+  await prisma.$executeRaw`
+    CREATE TABLE IF NOT EXISTS \`site_settings\` (
+      \`key\` VARCHAR(100) NOT NULL,
+      \`value\` TEXT NOT NULL,
+      \`updatedAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+      PRIMARY KEY (\`key\`)
     ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
   `;
 }
@@ -53,6 +77,7 @@ export async function GET() {
   try {
     await ensureAdminsTable();
     await ensureApiKeysTable();
+    await ensureSiteSettingsTable();
     const count = await prisma.admin.count();
     return NextResponse.json({ needSetup: count === 0 });
   } catch {
@@ -73,6 +98,7 @@ export async function POST(request: NextRequest) {
     // 確保資料表存在
     await ensureAdminsTable();
     await ensureApiKeysTable();
+    await ensureSiteSettingsTable();
 
     // 如果已有管理員，拒絕建立
     const count = await prisma.admin.count();

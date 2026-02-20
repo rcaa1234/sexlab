@@ -86,7 +86,9 @@ model Admin {
   id           Int      @id @default(autoincrement())
   email        String   @unique @db.VarChar(255)
   name         String   @db.VarChar(100)
-  passwordHash String   @db.VarChar(255)
+  passwordHash String?  @db.VarChar(255)
+  googleId     String?  @unique @db.VarChar(255)
+  avatar       String?  @db.VarChar(500)
   role         String   @default("editor") @db.VarChar(20) // admin, editor
   isActive     Boolean  @default(true)
 
@@ -107,6 +109,15 @@ model ApiKey {
   createdAt   DateTime  @default(now())
 
   @@map("api_keys")
+}
+
+// 網站設定
+model SiteSetting {
+  key       String   @id @db.VarChar(100)
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
 }
 
 // 媒體檔案
