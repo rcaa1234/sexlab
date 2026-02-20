@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     // 回傳完整 URL
     const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
     const url = `${siteUrl}/uploads/${filename}`;
 
     return NextResponse.json({ success: true, url, filename });
