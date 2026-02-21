@@ -14,36 +14,30 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get("error");
   const loginUrl = "/admin/login";
 
+  // 取得公開 origin（reverse proxy 背後 request.url 可能是 localhost）
+  const origin = getPublicOrigin(request);
+
   // 使用者在 Google 頁面拒絕授權
   if (error) {
-    return NextResponse.redirect(
-      new URL(`${loginUrl}?error=google_denied`, request.url)
-    );
+    return NextResponse.redirect(`${origin}${loginUrl}?error=google_denied`);
   }
 
   // 驗證 state cookie（CSRF 防護）
   const storedState = request.cookies.get("google_oauth_state")?.value;
   if (!state || !storedState || state !== storedState) {
-    return NextResponse.redirect(
-      new URL(`${loginUrl}?error=invalid_state`, request.url)
-    );
+    return NextResponse.redirect(`${origin}${loginUrl}?error=invalid_state`);
   }
 
   if (!code) {
-    return NextResponse.redirect(
-      new URL(`${loginUrl}?error=no_code`, request.url)
-    );
+    return NextResponse.redirect(`${origin}${loginUrl}?error=no_code`);
   }
 
   if (!prisma) {
-    return NextResponse.redirect(
-      new URL(`${loginUrl}?error=db_unavailable`, request.url)
-    );
+    return NextResponse.redirect(`${origin}${loginUrl}?error=db_unavailable`);
   }
 
   try {
     // 交換 code 取得 access token
-    const origin = getPublicOrigin(request);
     const tokens = await exchangeCodeForTokens(code, origin);
     const googleUser = await getGoogleUserInfo(tokens.access_token);
 
@@ -83,7 +77,7 @@ export async function GET(request: NextRequest) {
     // 檢查是否啟用
     if (!admin.isActive) {
       const response = NextResponse.redirect(
-        new URL(`${loginUrl}?error=pending_approval`, request.url)
+        `${origin}${loginUrl}?error=pending_approval`
       );
       response.cookies.delete("google_oauth_state");
       return response;
@@ -92,7 +86,7 @@ export async function GET(request: NextRequest) {
     // 建立 session
     const token = await createSession(admin.id, admin.role);
 
-    const response = NextResponse.redirect(new URL("/admin", request.url));
+    const response = NextResponse.redirect(`${origin}/admin`);
     response.cookies.set(SESSION_COOKIE_NAME, token, getSessionCookieOptions());
     response.cookies.delete("google_oauth_state");
 
@@ -100,7 +94,7 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error("Google OAuth callback error:", err);
     return NextResponse.redirect(
-      new URL(`${loginUrl}?error=oauth_failed`, request.url)
+      `${origin}${loginUrl}?error=oauth_failed`
     );
   }
 }
