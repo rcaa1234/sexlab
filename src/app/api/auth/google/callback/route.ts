@@ -43,7 +43,8 @@ export async function GET(request: NextRequest) {
 
   try {
     // 交換 code 取得 access token
-    const tokens = await exchangeCodeForTokens(code);
+    const origin = new URL(request.url).origin;
+    const tokens = await exchangeCodeForTokens(code, origin);
     const googleUser = await getGoogleUserInfo(tokens.access_token);
 
     const superAdminEmail = process.env.SUPER_ADMIN_EMAIL?.toLowerCase();
