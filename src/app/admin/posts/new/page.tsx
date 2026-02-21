@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Save, Eye } from "lucide-react";
 import Link from "next/link";
+import FeaturedImageField from "@/components/admin/FeaturedImageField";
+import ContentEditor from "@/components/admin/ContentEditor";
 
 interface Category {
   id: number;
@@ -178,26 +180,16 @@ export default function NewPostPage() {
         </div>
 
         {/* 精選圖片 */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">精選圖片網址</label>
-          <Input
-            value={form.featuredImage}
-            onChange={(e) => setForm({ ...form, featuredImage: e.target.value })}
-            placeholder="https://..."
-          />
-        </div>
+        <FeaturedImageField
+          value={form.featuredImage}
+          onChange={(url) => setForm({ ...form, featuredImage: url })}
+        />
 
         {/* 內容 */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">內容 * (HTML)</label>
-          <textarea
-            value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
-            placeholder="<h2>標題</h2><p>內容...</p>"
-            rows={20}
-            className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground font-mono text-sm resize-y"
-          />
-        </div>
+        <ContentEditor
+          value={form.content}
+          onChange={(content) => setForm({ ...form, content })}
+        />
 
         {/* FAQ JSON */}
         <div>

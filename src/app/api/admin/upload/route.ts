@@ -53,10 +53,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     await writeFile(path.join(uploadDir, filename), buffer);
 
-    // 回傳完整 URL
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
-    const url = `${siteUrl}/uploads/${filename}`;
+    // 回傳相對路徑，避免域名問題
+    const url = `/uploads/${filename}`;
 
     return NextResponse.json({ success: true, url, filename });
   } catch (err) {
