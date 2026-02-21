@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildGoogleAuthUrl } from "@/lib/google-oauth";
+import { buildGoogleAuthUrl, getPublicOrigin } from "@/lib/google-oauth";
 
 export async function GET(request: NextRequest) {
   // 產生 CSRF state
   const state = crypto.randomUUID();
 
-  const origin = new URL(request.url).origin;
+  const origin = getPublicOrigin(request);
   const url = buildGoogleAuthUrl(state, origin);
 
   const response = NextResponse.redirect(url);

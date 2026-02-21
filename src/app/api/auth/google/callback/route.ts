@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { exchangeCodeForTokens, getGoogleUserInfo } from "@/lib/google-oauth";
+import { exchangeCodeForTokens, getGoogleUserInfo, getPublicOrigin } from "@/lib/google-oauth";
 import {
   createSession,
   SESSION_COOKIE_NAME,
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // 交換 code 取得 access token
-    const origin = new URL(request.url).origin;
+    const origin = getPublicOrigin(request);
     const tokens = await exchangeCodeForTokens(code, origin);
     const googleUser = await getGoogleUserInfo(tokens.access_token);
 

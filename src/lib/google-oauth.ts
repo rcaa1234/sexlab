@@ -1,15 +1,24 @@
+import { NextRequest } from "next/server";
+
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
-function getRedirectUri(origin?: string) {
-  const base = origin || process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
-  return `${base}/api/auth/google/callback`;
+/** 從 request headers 取得真實 origin（支援 reverse proxy） */
+export function getPublicOrigin(request: NextRequest): string {
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+  if (host) return `${proto}://${host}`;
+  return process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
 }
 
-export function buildGoogleAuthUrl(state: string, origin?: string): string {
+function getRedirectUri(origin: string) {
+  return `${origin}/api/auth/google/callback`;
+}
+
+export function buildGoogleAuthUrl(state: string, origin: string): string {
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
     redirect_uri: getRedirectUri(origin),
@@ -22,7 +31,7 @@ export function buildGoogleAuthUrl(state: string, origin?: string): string {
   return `${GOOGLE_AUTH_URL}?${params.toString()}`;
 }
 
-export async function exchangeCodeForTokens(code: string, origin?: string) {
+export async function exchangeCodeForTokens(code: string, origin: string) {
   const res = await fetch(GOOGLE_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
