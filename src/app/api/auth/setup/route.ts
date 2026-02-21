@@ -28,14 +28,10 @@ async function ensureAdminsTable() {
       UNIQUE INDEX \`admins_googleId_key\`(\`googleId\`)
     ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
   `;
-  // 升級舊表：passwordHash 改 nullable、新增 googleId + avatar
-  try {
-    await prisma.$executeRaw`ALTER TABLE \`admins\` MODIFY COLUMN \`passwordHash\` VARCHAR(255) NULL`;
-    await prisma.$executeRaw`ALTER TABLE \`admins\` ADD COLUMN \`googleId\` VARCHAR(255) NULL UNIQUE`;
-    await prisma.$executeRaw`ALTER TABLE \`admins\` ADD COLUMN \`avatar\` VARCHAR(500) NULL`;
-  } catch {
-    // 欄位已存在則忽略
-  }
+  // 升級舊表：passwordHash 改 nullable、新增 googleId + avatar（各自 try/catch，欄位已存在則忽略）
+  try { await prisma.$executeRaw`ALTER TABLE \`admins\` MODIFY COLUMN \`passwordHash\` VARCHAR(255) NULL`; } catch {}
+  try { await prisma.$executeRaw`ALTER TABLE \`admins\` ADD COLUMN \`googleId\` VARCHAR(255) NULL UNIQUE`; } catch {}
+  try { await prisma.$executeRaw`ALTER TABLE \`admins\` ADD COLUMN \`avatar\` VARCHAR(500) NULL`; } catch {}
 }
 
 // 用 raw SQL 建立 site_settings 資料表（如果不存在）
