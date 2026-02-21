@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { UPLOAD_DIR } from "@/lib/upload";
 
 const ALLOWED_TYPES = [
   "image/jpeg",
@@ -44,16 +45,15 @@ export async function POST(request: NextRequest) {
     const ext = path.extname(file.name) || mimeToExt(file.type);
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
 
-    // 確保 uploads 目錄存在
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
+    // 確保 uploads 目錄存在（使用持久化路徑）
+    await mkdir(UPLOAD_DIR, { recursive: true });
 
     // 寫入檔案
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(path.join(uploadDir, filename), buffer);
+    await writeFile(path.join(UPLOAD_DIR, filename), buffer);
 
-    // 回傳相對路徑，避免域名問題
+    // 回傳相對路徑
     const url = `/uploads/${filename}`;
 
     return NextResponse.json({ success: true, url, filename });
