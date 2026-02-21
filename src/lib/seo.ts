@@ -14,7 +14,7 @@ interface SEOProps {
 const siteConfig = {
   name: "愛愛實驗室",
   description: "愛愛實驗室提供專業的性知識、情趣用品評測與親密關係指南，讓你的愛愛生活更精彩。",
-  url: "https://sexlab.com.tw",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw",
   ogImage: "/og-image.jpg",
   links: {
     instagram: "https://www.instagram.com/sexlab.tw",
@@ -143,6 +143,33 @@ export function generateWebsiteJsonLd() {
       },
       "query-input": "required name=search_term_string",
     },
+  };
+}
+
+export function generateOrganizationJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    logo: `${siteConfig.url}/logo.png`,
+    description: siteConfig.description,
+    sameAs: [siteConfig.links.instagram, siteConfig.links.facebook],
+  };
+}
+
+export function generateBreadcrumbJsonLd(
+  items: { name: string; url: string }[]
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
   };
 }
 

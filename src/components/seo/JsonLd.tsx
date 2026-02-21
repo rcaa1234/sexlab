@@ -1,3 +1,9 @@
+import {
+  generateWebsiteJsonLd,
+  generateOrganizationJsonLd,
+  generateBreadcrumbJsonLd,
+} from "@/lib/seo";
+
 interface FAQ {
   question: string;
   answer: string;
@@ -82,5 +88,35 @@ export function ArticleJsonLd({
         />
       )}
     </>
+  );
+}
+
+export function WebSiteJsonLd() {
+  const schema = generateWebsiteJsonLd();
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+export function OrganizationJsonLd() {
+  const schema = generateOrganizationJsonLd();
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+export function BreadcrumbJsonLd({ items }: { items: { name: string; url: string }[] }) {
+  const schema = generateBreadcrumbJsonLd(items);
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
   );
 }

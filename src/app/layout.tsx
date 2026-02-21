@@ -28,6 +28,12 @@ export const metadata: Metadata = {
   keywords: ["性知識", "情趣用品", "愛愛", "親密關係", "性教育", "情趣生活"],
   authors: [{ name: "愛愛實驗室" }],
   creator: "愛愛實驗室",
+  alternates: {
+    canonical: siteUrl,
+    types: {
+      "application/rss+xml": "/feed.xml",
+    },
+  },
   openGraph: {
     type: "website",
     locale: "zh_TW",
@@ -36,6 +42,7 @@ export const metadata: Metadata = {
     title: "愛愛實驗室 | 性知識與情趣生活分享",
     description:
       "愛愛實驗室提供專業的性知識、情趣用品評測與親密關係指南，讓你的愛愛生活更精彩。",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
@@ -61,10 +68,18 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const ga4Id = await getSiteSetting("ga4_measurement_id");
+  const [ga4Id, gscVerification] = await Promise.all([
+    getSiteSetting("ga4_measurement_id"),
+    getSiteSetting("google_site_verification"),
+  ]);
 
   return (
     <html lang="zh-TW">
+      <head>
+        {gscVerification && (
+          <meta name="google-site-verification" content={gscVerification} />
+        )}
+      </head>
       <body
         className={`${notoSansTC.variable} ${geistMono.variable} font-sans antialiased`}
       >

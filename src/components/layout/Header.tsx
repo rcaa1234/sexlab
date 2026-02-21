@@ -10,7 +10,7 @@ const navItems = [
   { label: "愛愛小知識", href: "/category/knowledge" },
   { label: "愛愛小道具", href: "/category/toys" },
   { label: "愛愛小創作", href: "/category/creative" },
-  { label: "聯絡我們", href: "/contact" },
+  { label: "關於我們", href: "/about" },
 ];
 
 export function Header() {

@@ -1,4 +1,5 @@
 import { Header, Footer } from "@/components/layout";
+import { WebSiteJsonLd, OrganizationJsonLd } from "@/components/seo/JsonLd";
 import { ArticleCard, Article } from "@/components/blog";
 import { getPosts, getCategories } from "@/lib/wordpress";
 import { Button } from "@/components/ui/button";
@@ -88,6 +89,8 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+      <WebSiteJsonLd />
+      <OrganizationJsonLd />
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -138,7 +141,7 @@ export default async function HomePage() {
         <section className="container mx-auto px-4 py-12">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-foreground">最新文章</h2>
-            <Link href="/posts">
+            <Link href="/search">
               <Button variant="ghost" className="text-primary hover:text-primary/80">
                 查看全部
                 <ArrowRight className="ml-2 h-4 w-4" />

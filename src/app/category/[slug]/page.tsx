@@ -5,6 +5,9 @@ import { ArticleCard, Article } from "@/components/blog";
 import { Button } from "@/components/ui/button";
 import { getPosts } from "@/lib/wordpress";
 import { ArrowLeft } from "lucide-react";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sexlab.com.tw";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -48,6 +51,9 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   return {
     title: info.name,
     description: info.description,
+    alternates: {
+      canonical: `${siteUrl}/category/${slug}`,
+    },
     openGraph: {
       title: `${info.name} | 愛愛實驗室`,
       description: info.description,
@@ -155,6 +161,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "首頁", url: siteUrl },
+          { name: info.name, url: `${siteUrl}/category/${slug}` },
+        ]}
+      />
 
       <main className="flex-1">
         {/* Category Header */}

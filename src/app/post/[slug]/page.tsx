@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getPost, getPosts, type TransformedPost } from "@/lib/db";
 import { Calendar, Clock, ArrowLeft, Share2, Heart, ChevronDown } from "lucide-react";
 import { ArticleCard } from "@/components/blog";
-import { ArticleJsonLd } from "@/components/seo/JsonLd";
+import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 
 // 每 60 秒重新生成頁面（ISR）
 export const revalidate = 60;
@@ -97,6 +97,13 @@ export default async function PostPage({ params }: PostPageProps) {
         datePublished={article.isoDate}
         dateModified={article.updatedAt}
         faq={article.faqJson}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "首頁", url: siteUrl },
+          { name: article.category.name, url: `${siteUrl}/category/${article.category.slug}` },
+          { name: article.title, url: `${siteUrl}/post/${article.slug}` },
+        ]}
       />
 
       <main className="flex-1">
